@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { getSelectedRecord } from "../util/storage";
 import "./Dashboard.css";
-import ItemSelect from "./components/Configelect";
+import ItemSelect from "./components/ConfigSelect";
 
 function Dashboard() {
   const [selected, setSelected] = useState<string[]>([]);
