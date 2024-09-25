@@ -1,7 +1,19 @@
-import { addSelected, getSelectedUnselected } from "@/entrypoints/util/storage";
+import { addSelected, getSelectedUnselected, removeSelected } from "@/entrypoints/util/storage";
 import { ProductWithNum } from "@/entrypoints/util/types";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import { Box, Button, Snackbar, TextField, Typography } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProductCard from "./ProductCard";
@@ -11,7 +23,8 @@ function ConfigSelect() {
   const [selected, setSelected] = useState<ProductWithNum[]>([]);
   const [unselected, setUnselected] = useState<ProductWithNum[]>([]);
   const [listName, setListName] = useState(configName || "");
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [snackBarMessage, setSnackBarMessage] = useState<string | undefined>(undefined);
+  const [openDialog, setOpenDialog] = useState(false);
 
   const swapProduct = (url: string) => {
     const indexInSelected = selected.findIndex((item) => item.url === url);
@@ -40,6 +53,25 @@ function ConfigSelect() {
     };
   };
 
+  const handleSave = () => {
+    if (selected.length === 0 || !listName) return;
+    addSelected(listName, selected);
+    setSnackBarMessage("保存しました");
+    location.href = `#/${listName}`;
+  };
+
+  const handleRemove = () => {
+    if (!listName) return;
+    setOpenDialog(true);
+  };
+
+  const confirmRemove = () => {
+    removeSelected(listName);
+    setSnackBarMessage("削除しました");
+    setOpenDialog(false);
+    location.href = "#/";
+  };
+
   useEffect(() => {
     setListName(configName || "");
     (async () => {
@@ -54,12 +86,6 @@ function ConfigSelect() {
   const totalPrice = selected.reduce((acc, product) => acc + (product.price || 0) * product.num, 0);
   const totalPoint = selected.reduce((acc, product) => acc + (product.point || 0) * product.num, 0);
 
-  const handleSave = () => {
-    if (selected.length === 0 || !listName) return;
-    addSelected(listName, selected);
-    setSaveSuccess(true);
-  };
-
   return (
     <Box
       display={"grid"}
@@ -68,12 +94,22 @@ function ConfigSelect() {
       gridTemplateRows={"50px minmax(0, 1fr)"}
       gridTemplateColumns={"2fr 25px 1fr"}
     >
-      <Box gridArea="1 / 1 / 2 / 4" display="flex" alignItems="center" justifyContent="center" margin={1}>
+      <Box gridArea="1 / 1 / 2 / 4" display="flex" alignItems="center" justifyContent="space-between" margin={1}>
+        <Button
+          variant="contained"
+          color="error"
+          sx={{ marginLeft: "10px", height: "40px" }}
+          onClick={handleRemove}
+          startIcon={<DeleteIcon />}
+          disabled={!configName}
+        >
+          Delete
+        </Button>
         <Box display="flex">
           <Typography variant="h5">¥{totalPrice}</Typography>
           {totalPoint == 0 && <Typography variant="h5">({totalPoint}pt)</Typography>}
         </Box>
-        <Box display="flex" alignItems="center" position="absolute" right={10}>
+        <Box display="flex" alignItems="center">
           <TextField
             label="リスト名"
             variant="standard"
@@ -126,11 +162,25 @@ function ConfigSelect() {
       </Box>
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        open={saveSuccess}
+        open={snackBarMessage !== undefined}
         autoHideDuration={6000}
-        onClose={() => setSaveSuccess(false)}
-        message="保存が成功しました"
+        onClose={() => setSnackBarMessage(undefined)}
+        message={snackBarMessage}
       />
+      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+        <DialogTitle>削除確認</DialogTitle>
+        <DialogContent>
+          <DialogContentText>本当にこのリストを削除しますか？</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDialog(false)} color="primary">
+            キャンセル
+          </Button>
+          <Button onClick={confirmRemove} color="primary" autoFocus>
+            削除
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

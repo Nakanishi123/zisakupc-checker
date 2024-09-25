@@ -115,6 +115,17 @@ export async function addSelected(key: string, selected: Selected): Promise<void
   }
 }
 
+export async function removeSelected(key: string): Promise<void> {
+  try {
+    const configs = await getSelectedRecord();
+    delete configs[key];
+    await storage.setItem(SELECTED_RECORD_NAME, JSON.stringify(configs));
+  } catch (error) {
+    console.error("Failed to remove selected:", error);
+    throw error;
+  }
+}
+
 export async function getSelectedUnselected(
   key?: string
 ): Promise<{ selected: ProductWithNum[]; unselected: ProductWithNum[] } | null> {
