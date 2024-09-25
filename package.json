@@ -1,6 +1,6 @@
 {
-  "name": "zisakupc-checker",
-  "description": "ZisakuPC Checker",
+  "name": "自作PCチェッカー",
+  "description": "自作PCの価格を調べる拡張機能",
   "private": true,
   "version": "0.0.1",
   "license":"BSD-3-Clause",
